@@ -1,5 +1,7 @@
 snake_body = generate_body();
 snake_body = apple(snake_body);
+snake_length = body_len(snake_body);
+snake_body_array = generate_body_array(snake_body);
 
 [snake_head_x, snake_head_y] = snakeHeadCoord(snake_body);
 snake_head = [snake_head_x, snake_head_y];
@@ -7,8 +9,6 @@ snake_head = [snake_head_x, snake_head_y];
 snake_direction = 1;
 snake_status = [0 0 0 0 0 0 0 0 0 0 0];
 
-
-disp(snake_body);
 
 %Predefined values
 function body = generate_body()
@@ -23,12 +23,24 @@ function body = generate_body()
 end
 
 %Get array of x and y coords of head
-function [h_x, h_y] = snakeHeadCoord(snake_matrix)
-    [h_x, h_y] = ind2sub(size(snake_matrix), find(snake_matrix==5));
+function [h_x, h_y] = snakeHeadCoord(my_matrix)
+    [h_x, h_y] = ind2sub(size(my_matrix), find(my_matrix==5));
+end
+
+%Get body length
+function len = body_len(my_matrix)
+    vct = find(my_matrix==1|my_matrix==5);
+    vct_size = size(vct);
+    len = vct_size(1);%Attenzione che size resituisce un array
 end
 
 %Get array of all body coordinates of snake
-
+function body_array = generate_body_array(my_matrix)
+    vct = find(my_matrix==1|my_matrix==5);
+    body_array = ind2sub(body_len(my_matrix), vct);
+    disp(body_array(1));
+    da vedere
+end
 
 %To call AFTER performing the move
 function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, curr_direction, status)
