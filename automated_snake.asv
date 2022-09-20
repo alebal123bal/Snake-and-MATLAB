@@ -27,9 +27,6 @@ function [h_x, h_y] = snakeHeadCoord(snake_matrix)
     [h_x, h_y] = ind2sub(size(snake_matrix), find(snake_matrix==5));
 end
 
-%Get array of all body coordinates of snake
-
-
 %To call AFTER performing the move
 function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, curr_direction, status)
     [x, y] = snakeHeadCoord(matrix);
@@ -65,8 +62,8 @@ end
 
 %Perform movement
 function after_move_matrix = move(my_matrix, curr_direction, new_direction, status)
-    if(abs(curr_direction-new_direction)~=2)
-        return
+    if(curr_direction==1 && new_direction!=3)||(curr_direction==2 && new_direction!=4)||(curr_direction==1 && new_direction!=3)
+                return
     end
 end
 
