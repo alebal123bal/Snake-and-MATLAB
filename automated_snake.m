@@ -37,9 +37,8 @@ end
 %Get array of all body coordinates of snake
 function body_array = generate_body_array(my_matrix)
     vct = find(my_matrix==1|my_matrix==5);
-    body_array = ind2sub(body_len(my_matrix), vct);
+    body_array = ind2sub(size(my_matrix), vct);
     disp(body_array(1));
-    da vedere
 end
 
 %To call AFTER performing the move
