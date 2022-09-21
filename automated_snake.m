@@ -6,12 +6,27 @@ snake_body_array = generate_body_array(snake_body);
 [snake_head_x, snake_head_y] = snakeHeadCoord(snake_body);
 [snake_tail_x, snake_tail_y] = snakeTailCoord(snake_body);
 
-snake_direction = 1;
+snake_direction = 1;    %This is direction from last 
+
 [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(snake_body, snake_direction);
 snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
 
-print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
+disp("Posizione iniziale")
+%print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
+disp(snake_body)
 
+%Main loop
+for i = 1:2
+    chosen_direction = 1;
+    [image, vector] = move(snake_body, snake_body_array, snake_status, chosen_direction);
+    
+    snake_body = image;
+    snake_body_array = vector;
+    
+    disp("Dopo la " + i + " mossa")
+    %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
+    disp(snake_body)
+end
 
 %Predefined values
 function body = generate_body()
@@ -51,7 +66,7 @@ end
 function len = body_len(my_matrix)
     vct = find(my_matrix > 0);
     vct_size = size(vct);
-    len = vct_size(1);%Attenzione che size resituisce un array
+    len = vct_size(1);  %Attenzione che size resituisce un array
 end
 
 %Get array of all body coordinates of snake
@@ -72,8 +87,6 @@ end
 %Function to read snake sensors
 function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, curr_direction)
     [x, y] = snakeHeadCoord(matrix);
-    disp("La testa che ho letto è ");
-    disp([x, y]);
     head = [x, y];
     if curr_direction == 1   %right
         front_sensor = [head(1), head(2)+1];
@@ -99,12 +112,87 @@ function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, cur
     readen_left = matrix(left_sensor(1), left_sensor(2)) - 3;
     readen_right = matrix(right_sensor(1), right_sensor(2)) - 3;
 
-    disp("Left sensor " + readen_left);
-    disp("Right sensor " + readen_right);
-    disp("Front sensor " + readen_front);
+    %disp("Left sensor " + readen_left);
+    %disp("Right sensor " + readen_right);
+    %disp("Front sensor " + readen_front);
 end
 
-%Perform movement
+%Perform movement: returns the game matrix updated
+function [final_matrix, final_array] = move(my_matrix, my_array, status, direction)   %status is used to see if it's a legal move
+    [next_h_x, next_h_y] = nextHeadCoord(my_matrix, status, direction);
+    final_array = my_array;
+
+    if(my_matrix(next_h_x, next_h_y) == -1)
+        %TODO reset
+        disp("Game over: crashed with border")
+    elseif (my_matrix(next_h_x, next_h_y) > 0)
+        %TODO reset
+        disp("Game over: biten yourself")
+    else
+        %Do mov
+        [clear_x, clear_y] = snakeTailCoord(my_matrix);
+        final_array = push(my_array, [next_h_x, next_h_y, 0]);
+        final_matrix = fromArrayToMatrix(my_matrix, final_array);
+        %Have you eaten apple?
+        if(my_matrix(next_h_x, next_h_y) == -2)
+            return
+        else
+            final_array = pop(final_array);
+            final_matrix(clear_x, clear_y) = 0;
+        end
+
+    end
+end
+
+%Print snake_array_body into snake_body
+function mat = fromArrayToMatrix(my_matrix, my_array)
+    mat = my_matrix;
+    last = size(my_array);
+    for i = 1:last(1)
+        mat(my_array(i, 1), my_array(i, 2)) = my_array(i, 3);
+    end
+end
+
+%Get next head position function; similar to readSensor switch case
+function [next_h_x, next_h_y] = nextHeadCoord(my_matrix, status, next_dir)
+    [h_x, h_y] = snakeHeadCoord(my_matrix);
+
+    one_hot_dir = [status(1), status(2), status(3), status(4)];
+    i = find(one_hot_dir==1);
+
+    if(abs(next_dir - i) == 2)  %Then illegal move: keep current direction
+        %disp("Can't");
+        if i == 1   %right
+            next_h_x = h_x;
+            next_h_y = h_y + 1;
+        elseif i == 2   %down
+            next_h_x = h_x + 1;
+            next_h_y = h_y;
+        elseif i == 3   %left
+            next_h_x = h_x;
+            next_h_y = h_y -1;
+        else   %up
+            next_h_x = h_x - 1;
+            next_h_y = h_y;
+        end
+    else
+        %disp("Yes");
+        if next_dir == 1   %right
+            next_h_x = h_x;
+            next_h_y = h_y + 1;
+        elseif next_dir == 2   %down
+            next_h_x = h_x + 1;
+            next_h_y = h_y;
+        elseif next_dir == 3   %left
+            next_h_x = h_x;
+            next_h_y = h_y -1;
+        else   %up
+            next_h_x = h_x - 1;
+            next_h_y = h_y;
+        end
+    end
+end
+
 
 %Auxiliary function to calculate game over: if head lands on 6 or 9 it's
 %over
@@ -120,7 +208,9 @@ function apple_added_matrix = apple(my_matrix)
     end
 
     apple_added_matrix = my_matrix;
-    apple_added_matrix(x, y) = apple_added_matrix(x, y) - 2;
+    %Modded
+    %apple_added_matrix(x, y) = apple_added_matrix(x, y) - 2;
+    apple_added_matrix(3, 6) = apple_added_matrix(3, 6) - 2;
 end
 
 %Function to get apple position
@@ -215,14 +305,18 @@ function print(my_matrix, my_snake, length, direction, status, head, tail)
 end
 
 %pop() function
-function arr = pop(my_array, i)
+function arr = pop(my_array)
     arr = my_array;
-    arr(i, :) = [];
+    arr_size = size(arr);
+    arr(arr_size(1), :) = [];
+    arr = sortrows(arr, 3);
 end
 
-%push() function
+%push() function specific of snake
 function arr = push(my_array, row)
-    arr = [my_array; row];
+    arr = [row; my_array];
+    arr(:, 3) = arr(:, 3) + 1;
+    arr = sortrows(arr, 3);
 end
 
 %Sort array function: works only with snake_body_array
