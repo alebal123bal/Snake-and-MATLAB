@@ -1,15 +1,10 @@
-snake_body = generate_body();
-snake_body = apple(snake_body);
-snake_length = body_len(snake_body);
-snake_body_array = generate_body_array(snake_body);
+[i1, i2, i3, i4, i5] = reset_init();
 
-[snake_head_x, snake_head_y] = snakeHeadCoord(snake_body);
-[snake_tail_x, snake_tail_y] = snakeTailCoord(snake_body);
-
-snake_direction = 1;    %This is direction from last 
-
-[s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(snake_body, snake_direction);
-snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
+snake_body = i1;
+snake_length = i2;
+snake_body_array = i3;
+snake_direction = i4;
+snake_status = i5;
 
 disp("Posizione iniziale")
 %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
@@ -27,6 +22,20 @@ for i = 1:2
     %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
     disp(snake_body)
 end
+
+%RESET function
+function [snake_body, snake_length, snake_body_array, snake_direction, snake_status] = reset_init()
+    snake_body = generate_body();
+    snake_body = apple(snake_body);
+    snake_length = body_len(snake_body);
+    snake_body_array = generate_body_array(snake_body);
+    snake_direction = 1;    %This is direction from last position
+    
+    [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(snake_body, snake_direction);
+    snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
+end
+
+
 
 %Predefined values
 function body = generate_body()
@@ -130,11 +139,13 @@ function [final_matrix, final_array] = move(my_matrix, my_array, status, directi
         disp("Game over: biten yourself")
     else
         %Do mov
+        %TODO: update length and update status
         [clear_x, clear_y] = snakeTailCoord(my_matrix);
         final_array = push(my_array, [next_h_x, next_h_y, 0]);
         final_matrix = fromArrayToMatrix(my_matrix, final_array);
         %Have you eaten apple?
         if(my_matrix(next_h_x, next_h_y) == -2)
+            %TODO: increase highscore
             return
         else
             final_array = pop(final_array);
