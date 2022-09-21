@@ -10,19 +10,26 @@ snake_direction = 1;
 [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(snake_body, snake_direction);
 snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
 
-disp("The current status is ")
-disp(snake_status)
-disp(snake_body);
+print(snake_body, snake_body_array, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
+
+disp("Prima del push");
+disp(snake_body_array);
+
+snake_body_array = push(snake_body_array, [101 101]);
+
+disp("Dopo il push");
+disp(snake_body_array);
+
 
 %Predefined values
 function body = generate_body()
     body = [4 4 4 4 4 4 4 4; 
     4 0 0 0 0 0 0 4;
-    4 0 0 0 0 0 0 4;
-    4 0 0 0 0 0 0 4;
-    4 0 0 0 0 1 5 4;
-    4 0 0 0 0 0 0 4;
-    4 0 0 0 0 0 0 4;
+    4 0 0 0 5 0 0 4;
+    4 0 0 0 1 0 0 4;
+    4 0 1 1 1 0 0 4;
+    4 0 1 0 0 0 0 4;
+    4 0 2 0 0 0 0 4;
     4 4 4 4 4 4 4 4];
 end
 
@@ -32,11 +39,25 @@ function [h_x, h_y] = snakeHeadCoord(my_matrix)
 end
 
 %Get array of x and y coords of tail
+function [t_x, t_y] = snakeTailCoord(my_matrix)
+    [t_x, t_y] = ind2sub(size(my_matrix), find(my_matrix==2));
+end
 
+%Get index of the head inside snake_body_array
+function i = bodyHeadIndex(my_matrix, my_array)
+    [h_x, h_y] = snakeHeadCoord(my_matrix);
+    [~, i] = ismember([h_x, h_y], my_array, 'rows');
+end
+
+%Get index of the tail inside snake_body_array
+function i = bodyTailIndex(my_matrix, my_array)
+    [t_x, t_y] = snakeTailCoord(my_matrix);
+    [~, i] = ismember([t_x, t_y], my_array, 'rows');
+end
 
 %Get body length
 function len = body_len(my_matrix)
-    vct = find(my_matrix==1|my_matrix==5);
+    vct = find(my_matrix==1|my_matrix==5|my_matrix==2);
     vct_size = size(vct);
     len = vct_size(1);%Attenzione che size resituisce un array
 end
@@ -45,9 +66,9 @@ end
 function body_array = generate_body_array(my_matrix)
     len = body_len(my_matrix);
     body_array = zeros(len, 2);
-    vct = find(xor(my_matrix==1,my_matrix==5));
+    vct = find((my_matrix==1|my_matrix==5|my_matrix==2));
     for i = 1:len
-        [a, b] = ind2sub(64, vct(i));
+        [a, b] = ind2sub(size(my_matrix), vct(i));
         body_array(i, 1) = a;
         body_array(i, 2) = b;
     end
@@ -81,9 +102,9 @@ function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, cur
     readen_left = matrix(left_sensor(1), left_sensor(2)) + 13;
     readen_right = matrix(right_sensor(1), right_sensor(2)) + 13;
 
-    disp("Left sensor " + readen_left);
-    disp("Right sensor " + readen_right);
-    disp("Front sensor " + readen_front);
+    %disp("Left sensor " + readen_left);
+    %disp("Right sensor " + readen_right);
+    %disp("Front sensor " + readen_front);
 end
 
 %Perform movement
@@ -175,7 +196,31 @@ function [dir_r, dir_d, dir_l, dir_u, food_r, food_d, food_l, food_u, dan_ah, da
     food_u = apple_u;
 end
 
-%TODO
-function print(matrix, direction, status)
-    return
+%Utilities
+
+%Print everything
+function print(my_matrix, my_snake, direction, status, head, tail)
+    disp("Direction is ");
+    disp(direction);
+    disp("Status is ");
+    disp(status);
+    disp("Snake body is");
+    disp(my_snake);
+    disp("Head is ");
+    disp(head);
+    disp("Tail is ");
+    disp(tail);
+    disp("Snake is ");
+    disp(my_matrix);
+end
+
+%pop() function
+function arr = pop(my_array, i)
+    arr = my_array;
+    arr(i, :) = [];
+end
+
+%push() function
+function arr = push(my_array, row)
+    arr = [my_array; row];
 end
