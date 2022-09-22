@@ -4,43 +4,42 @@ snake_body = i1;
 snake_body_array = i2;
 snake_status = i3;
 snake_direction = i4;
-snake_highscore = i5;
+snake_score = i5;
 
 
 disp("Posizione iniziale")
-%print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
 disp(snake_body)
 disp("Status iniziale")
 disp(snake_status)
 
 %Main loop
-for i = 1:4
+for i = 1:10
     %chosen_direction = snake_direction;
-    chosen_direction = 3;   %Illegal on purpose
-    [image, vector, stat, dir, highscore] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_highscore);
+    chosen_direction = randi(4);
+    disp("Voglio muovermi a " + chosen_direction)
+    [image, vector, stat, dir, highscore] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score);
     
     snake_body = image;
     snake_body_array = vector;
     snake_status = stat;
     snake_direction = dir;
-    snake_highscore = highscore;
+    snake_score = highscore;
     
     disp("Dopo la " + i + " mossa")
-    %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
     disp(snake_body)
     disp("Status dopo la " + i + " mossa")
     disp(snake_status)
 end
 
 %RESET function
-function [snake_body, snake_body_array, snake_status, snake_direction, snake_highscore] = reset_init()
+function [snake_body, snake_body_array, snake_status, snake_direction, snake_score] = reset_init()
     snake_body = generate_body();
     snake_body = apple(snake_body);
     snake_body_array = generate_body_array(snake_body);
     snake_direction = 1;
     [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(snake_body, snake_direction);
     snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
-    snake_highscore = body_len(snake_body);
+    snake_score = body_len(snake_body);
 end
 
 
@@ -139,6 +138,7 @@ function legal = legalMove(stat, new_dir)
     i = find(one_hot_dir==1);
 
     if(abs(new_dir - i) == 2)  %Then illegal move: keep current direction
+        disp("Found illegal; keeping current direction")
         legal = i;
     else
         legal = new_dir;
@@ -174,7 +174,6 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
         final_score = i5;
     else
         %Do mov
-        disp("Moved")
         [clear_x, clear_y] = snakeTailCoord(my_matrix);
         final_array = push(my_array, [next_h_x, next_h_y, 0]);
         final_matrix = fromArrayToMatrix(my_matrix, final_array);
