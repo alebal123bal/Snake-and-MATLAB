@@ -10,19 +10,20 @@ nn_weights_second = inn2;
 nn_biases_hidden = inn3;
 nn_biases_out = inn4;
 
-disp("Posizione iniziale")
-disp(snake_body)
-disp("Status iniziale")
-disp(snake_status)
+%disp("Posizione iniziale")
+%disp(snake_body)
+%disp("Status iniziale")
+%disp(snake_status)
 
 highscore = snake_score;
 
 i = 1;
+steps_taken = 0;
 
 %Main loop
-while i <= 3
+while highscore < 10
     chosen_direction = feedForward(snake_status, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
-    disp("Voglio muovermi a " + chosen_direction)
+    %disp("Voglio muovermi a " + chosen_direction)
 
     [image, vector, stat, dir, score, inn1, inn2, inn3, inn4] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
     snake_body = image;
@@ -43,9 +44,39 @@ while i <= 3
     if snake_score > highscore
         highscore = snake_score;
         disp("New highscore! (" + highscore + ")")
+        
+        if highscore == 10
+            best_1 = nn_weights_first;
+            best_2 = nn_weights_second;
+            best_3 = nn_biases_hidden;
+            best_4 = nn_biases_out;
+
+            disp(best_1)
+            disp(best_2)
+            disp(best_3)
+            disp(best_4)
+        end
     end
 
+    disp(i)
     i = i + 1;
+    steps_taken = steps_taken + 1;
+    if steps_taken > 100
+        disp("Looping: Resetting")
+        [i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
+        
+        snake_body = i1;
+        snake_body_array = i2;
+        snake_status = i3;
+        snake_direction = i4;
+        snake_score = i5;
+        nn_weights_first = inn1;
+        nn_weights_second = inn2;
+        nn_biases_hidden = inn3;
+        nn_biases_out = inn4;
+
+        steps_taken = 0;
+    end
 end
 
 %RESET function
@@ -160,7 +191,7 @@ function legal = legalMove(stat, new_dir)
     i = find(one_hot_dir==1);
 
     if(abs(new_dir - i) == 2)  %Then illegal move: keep current direction
-        disp("Found illegal; keeping current direction")
+        %disp("Found illegal; keeping current direction")
         legal = i;
     else
         legal = new_dir;
@@ -175,7 +206,7 @@ function [final_matrix, final_array, final_status, final_direction, final_score,
 
     if(my_matrix(next_h_x, next_h_y) == -1)
         %TODO reset
-        disp("Game over: crashed with border")
+        %disp("Game over: crashed with border")
         [i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
 
         final_matrix = i1;
