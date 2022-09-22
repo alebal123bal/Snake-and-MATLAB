@@ -58,11 +58,11 @@ while highscore < 10
         end
     end
 
-    disp(i)
+    %disp(i)
     i = i + 1;
     steps_taken = steps_taken + 1;
     if steps_taken > 100
-        disp("Looping: Resetting")
+        %disp("Looping: Resetting")
         [i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
         
         snake_body = i1;
@@ -221,7 +221,7 @@ function [final_matrix, final_array, final_status, final_direction, final_score,
 
     elseif (my_matrix(next_h_x, next_h_y) > 0)
         %TODO reset
-        disp("Game over: biten yourself")
+        %disp("Game over: biten yourself")
         [i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
 
         final_matrix = i1;
@@ -416,16 +416,16 @@ end
 
 %Randomizer for Neural Network
 function [weights_first, weights_second, biases_hidden, biases_out] = NN()
-    disp("Randomizing network...")
-    weights_first = 1 - rand(4, 11)*2;
+    %disp("Randomizing network...")
+    weights_first = 1 - rand(256, 11)*2;
     %disp("Pesi first")
     %disp(weights_first)
 
-    weights_second = 1 - rand(4, 4)*2;
+    weights_second = 1 - rand(4, 256)*2;
     %disp("Pesi second")
     %disp(weights_second)
 
-    biases_hidden = 1 - rand(1, 4)*2;
+    biases_hidden = 1 - rand(1, 256)*2;
     %disp("Biases hidden")
     %disp(biases_hidden)
 
