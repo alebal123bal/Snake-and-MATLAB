@@ -10,12 +10,13 @@ snake_highscore = i5;
 disp("Posizione iniziale")
 %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
 disp(snake_body)
-disp("Status iniziale è ");
-disp(snake_status);
+disp("Status iniziale")
+disp(snake_status)
 
 %Main loop
-for i = 1:100
-    chosen_direction = snake_direction;
+for i = 1:4
+    %chosen_direction = snake_direction;
+    chosen_direction = 3;   %Illegal on purpose
     [image, vector, stat, dir, highscore] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_highscore);
     
     snake_body = image;
@@ -27,8 +28,8 @@ for i = 1:100
     disp("Dopo la " + i + " mossa")
     %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
     disp(snake_body)
-    disp("Status dopo la " + i + " mossa");
-    disp(snake_status);
+    disp("Status dopo la " + i + " mossa")
+    disp(snake_status)
 end
 
 %RESET function
@@ -36,7 +37,7 @@ function [snake_body, snake_body_array, snake_status, snake_direction, snake_hig
     snake_body = generate_body();
     snake_body = apple(snake_body);
     snake_body_array = generate_body_array(snake_body);
-    snake_direction = 1;    %This is direction from last position
+    snake_direction = 1;
     [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(snake_body, snake_direction);
     snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
     snake_highscore = body_len(snake_body);
@@ -48,9 +49,9 @@ end
 function body = generate_body()
     body = [-1 -1 -1 -1 -1 -1 -1 -1; 
     -1 0 0 0 0 0 0 -1;
-    -1 0 0 2 1 0 0 -1;
-    -1 0 0 3 0 0 0 -1;
-    -1 0 5 4 0 0 0 -1;
+    -1 0 0 0 0 0 0 -1;
+    -1 0 2 1 0 0 0 -1;
+    -1 0 0 0 0 0 0 -1;
     -1 0 0 0 0 0 0 -1;
     -1 0 0 0 0 0 0 -1;
     -1 -1 -1 -1 -1 -1 -1 -1];
@@ -133,13 +134,22 @@ function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, cur
     %disp("Front sensor " + readen_front);
 end
 
+function legal = legalMove(stat, new_dir)
+    one_hot_dir = [stat(1), stat(2), stat(3), stat(4)];
+    i = find(one_hot_dir==1);
+
+    if(abs(new_dir - i) == 2)  %Then illegal move: keep current direction
+        legal = i;
+    else
+        legal = new_dir;
+    end
+end
+
 %Perform movement: returns the game matrix updated
 function [final_matrix, final_array, final_status, final_direction, final_score] = move(my_matrix, my_array, my_status, my_direction, my_len)   %status is used to see if it's a legal move
-    [next_h_x, next_h_y] = nextHeadCoord(my_matrix, my_status, my_direction);
-    final_array = my_array;
+    legal_direction = legalMove(my_status, my_direction);
+    [next_h_x, next_h_y] = nextHeadCoord(my_matrix, legal_direction);   %Provide already legal direction
     final_score = my_len;
-    final_status = my_status;
-    final_direction = 1;
 
     if(my_matrix(next_h_x, next_h_y) == -1)
         %TODO reset
@@ -164,7 +174,7 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
         final_score = i5;
     else
         %Do mov
-        %TODO: update length and update status
+        disp("Moved")
         [clear_x, clear_y] = snakeTailCoord(my_matrix);
         final_array = push(my_array, [next_h_x, next_h_y, 0]);
         final_matrix = fromArrayToMatrix(my_matrix, final_array);
@@ -177,9 +187,9 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
             final_array = pop(final_array);
             final_matrix(clear_x, clear_y) = 0;
         end
-        [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(final_matrix, my_direction);
+        [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(final_matrix, legal_direction);
         final_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
-        final_direction = predictMove(final_status, my_direction);
+        final_direction = predictMove(final_status, legal_direction);
     end
 end
 
@@ -197,48 +207,24 @@ function mat = fromArrayToMatrix(my_matrix, my_array)
 end
 
 %Get next head position function; similar to readSensor switch case
-function [next_h_x, next_h_y] = nextHeadCoord(my_matrix, status, next_dir)
+function [next_h_x, next_h_y] = nextHeadCoord(my_matrix, next_dir)
     [h_x, h_y] = snakeHeadCoord(my_matrix);
-
-    one_hot_dir = [status(1), status(2), status(3), status(4)];
-    i = find(one_hot_dir==1);
-
-    if(abs(next_dir - i) == 2)  %Then illegal move: keep current direction
-        %disp("Can't");
-        if i == 1   %right
-            next_h_x = h_x;
-            next_h_y = h_y + 1;
-        elseif i == 2   %down
-            next_h_x = h_x + 1;
-            next_h_y = h_y;
-        elseif i == 3   %left
-            next_h_x = h_x;
-            next_h_y = h_y -1;
-        else   %up
-            next_h_x = h_x - 1;
-            next_h_y = h_y;
-        end
-    else
-        %disp("Yes");
-        if next_dir == 1   %right
-            next_h_x = h_x;
-            next_h_y = h_y + 1;
-        elseif next_dir == 2   %down
-            next_h_x = h_x + 1;
-            next_h_y = h_y;
-        elseif next_dir == 3   %left
-            next_h_x = h_x;
-            next_h_y = h_y -1;
-        else   %up
-            next_h_x = h_x - 1;
-            next_h_y = h_y;
-        end
+    %next_dir is already provided legal
+    if next_dir == 1   %right
+        next_h_x = h_x;
+        next_h_y = h_y + 1;
+    elseif next_dir == 2   %down
+        next_h_x = h_x + 1;
+        next_h_y = h_y;
+    elseif next_dir == 3   %left
+        next_h_x = h_x;
+        next_h_y = h_y -1;
+    else   %up
+        next_h_x = h_x - 1;
+        next_h_y = h_y;
     end
 end
 
-
-%Auxiliary function to calculate game over: if head lands on 6 or 9 it's
-%over
 
 %Apple is -2
 function apple_added_matrix = apple(my_matrix)
