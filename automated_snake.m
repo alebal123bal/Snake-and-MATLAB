@@ -99,14 +99,16 @@ end
 
 %Predefined values
 function body = generate_body()
-    body = [-1 -1 -1 -1 -1 -1 -1 -1; 
-    -1 0 0 0 0 0 0 -1;
-    -1 0 0 0 0 0 0 -1;
-    -1 0 2 1 0 0 0 -1;
-    -1 0 0 0 0 0 0 -1;
-    -1 0 0 0 0 0 0 -1;
-    -1 0 0 0 0 0 0 -1;
-    -1 -1 -1 -1 -1 -1 -1 -1];
+    body = [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1; 
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 2 1 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 -1 -1 -1 -1 -1 -1 -1 -1 -1];
 end
 
 %Get array of x and y coords of head
@@ -288,12 +290,12 @@ end
 
 %Apple is -2
 function apple_added_matrix = apple(my_matrix)
-    x = 1 + randi(6);
-    y = 1 + randi(6);
+    x = 1 + randi(8);
+    y = 1 + randi(8);
 
     while (my_matrix(x, y) - 2 >= -1)
-        x = 1 + randi(6);
-        y = 1 + randi(6);
+        x = 1 + randi(8);
+        y = 1 + randi(8);
     end
 
     apple_added_matrix = my_matrix;
