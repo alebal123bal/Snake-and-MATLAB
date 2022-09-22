@@ -10,7 +10,8 @@ snake_highscore = i5;
 disp("Posizione iniziale")
 %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
 disp(snake_body)
-disp("Highscore is " + snake_highscore);
+disp("Status iniziale è ");
+disp(snake_status);
 
 %Main loop
 for i = 1:2
@@ -26,7 +27,8 @@ for i = 1:2
     disp("Dopo la " + i + " mossa")
     %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
     disp(snake_body)
-    disp("Highscore is " + snake_highscore);
+    disp("Status dopo la " + i + " mossa");
+    disp(snake_status);
 end
 
 %RESET function
@@ -142,6 +144,10 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
     if(my_matrix(next_h_x, next_h_y) == -1)
         %TODO reset
         disp("Game over: crashed with border")
+        [i1, i2, i3, i4, i5] = reset()
+
+        final_matrix = i;
+        final_array = i2
     elseif (my_matrix(next_h_x, next_h_y) > 0)
         %TODO reset
         disp("Game over: biten yourself")
@@ -153,16 +159,16 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
         final_matrix = fromArrayToMatrix(my_matrix, final_array);
         %Have you eaten apple?
         if(my_matrix(next_h_x, next_h_y) == -2)
-            %TODO: increase highscore
             %If yes, no necessity to pop tail
             final_score = final_score + 1;
+            final_matrix = apple(final_matrix);
         else
             final_array = pop(final_array);
             final_matrix(clear_x, clear_y) = 0;
         end
         [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(final_matrix, my_direction);
         final_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
-        final_direction = predictMove(final_status, direction);
+        final_direction = predictMove(final_status, my_direction);
     end
 end
 
@@ -234,9 +240,8 @@ function apple_added_matrix = apple(my_matrix)
     end
 
     apple_added_matrix = my_matrix;
-    %Modded
-    %apple_added_matrix(x, y) = apple_added_matrix(x, y) - 2;
-    apple_added_matrix(3, 6) = apple_added_matrix(3, 6) - 2;
+    apple_added_matrix(x, y) = -2;
+    %apple_added_matrix(3, 6) = apple_added_matrix(3, 6) - 2;
 end
 
 %Function to get apple position

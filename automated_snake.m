@@ -14,7 +14,7 @@ disp("Status iniziale è ");
 disp(snake_status);
 
 %Main loop
-for i = 1:2
+for i = 1:100
     chosen_direction = snake_direction;
     [image, vector, stat, dir, highscore] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_highscore);
     
@@ -144,9 +144,24 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
     if(my_matrix(next_h_x, next_h_y) == -1)
         %TODO reset
         disp("Game over: crashed with border")
+        [i1, i2, i3, i4, i5] = reset_init();
+
+        final_matrix = i1;
+        final_array = i2;
+        final_status = i3;
+        final_direction = i4;
+        final_score = i5;
+
     elseif (my_matrix(next_h_x, next_h_y) > 0)
         %TODO reset
         disp("Game over: biten yourself")
+        [i1, i2, i3, i4, i5] = reset_init();
+
+        final_matrix = i1;
+        final_array = i2;
+        final_status = i3;
+        final_direction = i4;
+        final_score = i5;
     else
         %Do mov
         %TODO: update length and update status
