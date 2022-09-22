@@ -1,38 +1,45 @@
 [i1, i2, i3, i4, i5] = reset_init();
 
 snake_body = i1;
-snake_length = i2;
-snake_body_array = i3;
+snake_body_array = i2;
+snake_status = i3;
 snake_direction = i4;
-snake_status = i5;
+snake_highscore = i5;
+
 
 disp("Posizione iniziale")
 %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
 disp(snake_body)
+disp("Status iniziale è ");
+disp(snake_status);
 
 %Main loop
 for i = 1:2
-    chosen_direction = 1;
-    [image, vector] = move(snake_body, snake_body_array, snake_status, chosen_direction);
+    chosen_direction = snake_direction;
+    [image, vector, stat, dir, highscore] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_highscore);
     
     snake_body = image;
     snake_body_array = vector;
+    snake_status = stat;
+    snake_direction = dir;
+    snake_highscore = highscore;
     
     disp("Dopo la " + i + " mossa")
     %print(snake_body, snake_body_array, snake_length, snake_direction, snake_status, [snake_head_x, snake_head_y], [snake_tail_x, snake_tail_y]);
     disp(snake_body)
+    disp("Status dopo la " + i + " mossa");
+    disp(snake_status);
 end
 
 %RESET function
-function [snake_body, snake_length, snake_body_array, snake_direction, snake_status] = reset_init()
+function [snake_body, snake_body_array, snake_status, snake_direction, snake_highscore] = reset_init()
     snake_body = generate_body();
     snake_body = apple(snake_body);
-    snake_length = body_len(snake_body);
     snake_body_array = generate_body_array(snake_body);
     snake_direction = 1;    %This is direction from last position
-    
     [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(snake_body, snake_direction);
     snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
+    snake_highscore = body_len(snake_body);
 end
 
 
@@ -127,9 +134,12 @@ function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, cur
 end
 
 %Perform movement: returns the game matrix updated
-function [final_matrix, final_array] = move(my_matrix, my_array, status, direction)   %status is used to see if it's a legal move
-    [next_h_x, next_h_y] = nextHeadCoord(my_matrix, status, direction);
+function [final_matrix, final_array, final_status, final_direction, final_score] = move(my_matrix, my_array, my_status, my_direction, my_len)   %status is used to see if it's a legal move
+    [next_h_x, next_h_y] = nextHeadCoord(my_matrix, my_status, my_direction);
     final_array = my_array;
+    final_score = my_len;
+    final_status = my_status;
+    final_direction = 1;
 
     if(my_matrix(next_h_x, next_h_y) == -1)
         %TODO reset
@@ -145,14 +155,21 @@ function [final_matrix, final_array] = move(my_matrix, my_array, status, directi
         final_matrix = fromArrayToMatrix(my_matrix, final_array);
         %Have you eaten apple?
         if(my_matrix(next_h_x, next_h_y) == -2)
-            %TODO: increase highscore
-            return
+            %If yes, no necessity to pop tail
+            final_score = final_score + 1;
+            final_matrix = apple(final_matrix);
         else
             final_array = pop(final_array);
             final_matrix(clear_x, clear_y) = 0;
         end
-
+        [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(final_matrix, my_direction);
+        final_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
+        final_direction = predictMove(final_status, my_direction);
     end
+end
+
+function predicted_dir = predictMove(status, direction)
+    predicted_dir = 1;
 end
 
 %Print snake_array_body into snake_body
@@ -219,9 +236,8 @@ function apple_added_matrix = apple(my_matrix)
     end
 
     apple_added_matrix = my_matrix;
-    %Modded
-    %apple_added_matrix(x, y) = apple_added_matrix(x, y) - 2;
-    apple_added_matrix(3, 6) = apple_added_matrix(3, 6) - 2;
+    apple_added_matrix(x, y) = -2;
+    %apple_added_matrix(3, 6) = apple_added_matrix(3, 6) - 2;
 end
 
 %Function to get apple position
