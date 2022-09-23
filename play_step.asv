@@ -1,17 +1,22 @@
-[i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
+
+
+
+nn_weights_first = readmatrix('best1.dat');
+nn_weights_second = readmatrix('best2.dat');
+nn_biases_hidden = readmatrix('best3.dat');
+nn_biases_out = readmatrix('best4.dat');
+
+[i1, i2, i3, i4, i5] = reset_init();
 
 snake_body = i1;
 snake_body_array = i2;
 snake_status = i3;
 snake_direction = i4;
 snake_score = i5;
-nn_weights_first = inn1;
-nn_weights_second = inn2;
-nn_biases_hidden = inn3;
-nn_biases_out = inn4;
+
 
 %disp("Posizione iniziale")
-%disp(snake_body)
+disp(snake_body)
 %disp("Status iniziale")
 %disp(snake_status)
 
@@ -21,41 +26,22 @@ i = 1;
 steps_taken = 0;
 
 %Main loop
-while highscore < 9
+while i<=20
     chosen_direction = feedForward(snake_status, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
     %disp("Voglio muovermi a " + chosen_direction)
 
-    [image, vector, stat, dir, score, inn1, inn2, inn3, inn4] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
+    [image, vector, stat, dir, score] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score);
     snake_body = image;
     snake_body_array = vector;
     snake_status = stat;
     snake_direction = dir;
     snake_score = score;
-    nn_weights_first = inn1;
-    nn_weights_second = inn2;
-    nn_biases_hidden = inn3;
-    nn_biases_out = inn4;
     
-    %disp("Dopo la " + i + " mossa")
-    %disp(snake_body)
-    %disp("Status dopo la " + i + " mossa")
-    %disp(snake_status)
+    disp(snake_body)
 
     if snake_score > highscore
         highscore = snake_score;
         disp("New highscore! (" + highscore + ")")
-        
-        if highscore == 9
-            best_1 = nn_weights_first;
-            best_2 = nn_weights_second;
-            best_3 = nn_biases_hidden;
-            best_4 = nn_biases_out;
-
-            writematrix(best_1, 'best1.dat');
-            writematrix(best_2, 'best2.dat');
-            writematrix(best_3, 'best3.dat');
-            writematrix(best_4, 'best4.dat');
-        end
     end
 
     %disp(i)
@@ -70,17 +56,13 @@ while highscore < 9
         snake_status = i3;
         snake_direction = i4;
         snake_score = i5;
-        nn_weights_first = inn1;
-        nn_weights_second = inn2;
-        nn_biases_hidden = inn3;
-        nn_biases_out = inn4;
 
         steps_taken = 0;
     end
 end
 
 %RESET function
-function [snake_body, snake_body_array, snake_status, snake_direction, snake_score, nn1, nn2, nn3, nn4] = reset_init()
+function [snake_body, snake_body_array, snake_status, snake_direction, snake_score] = reset_init()
     snake_body = generate_body();
     snake_body = apple(snake_body);
     snake_body_array = generate_body_array(snake_body);
@@ -88,11 +70,6 @@ function [snake_body, snake_body_array, snake_status, snake_direction, snake_sco
     [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(snake_body, snake_direction);
     snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
     snake_score = body_len(snake_body);
-    [a, b, c, d] = NN();
-    nn1 = a;
-    nn2 = b;
-    nn3 = c;
-    nn4 = d;
 end
 
 
@@ -119,18 +96,6 @@ end
 %Get array of x and y coords of tail
 function [t_x, t_y] = snakeTailCoord(my_matrix)
     [t_x, t_y] = ind2sub(size(my_matrix), find(my_matrix==body_len(my_matrix)));
-end
-
-%Get index of the head inside snake_body_array
-function i = bodyHeadIndex(my_matrix, my_array)
-    [h_x, h_y] = snakeHeadCoord(my_matrix);
-    [~, i] = ismember([h_x, h_y], my_array, 'rows');
-end
-
-%Get index of the tail inside snake_body_array
-function i = bodyTailIndex(my_matrix, my_array)
-    [t_x, t_y] = snakeTailCoord(my_matrix);
-    [~, i] = ismember([t_x, t_y], my_array, 'rows');
 end
 
 %Get body length
@@ -182,10 +147,6 @@ function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, cur
     readen_front = matrix(front_sensor(1), front_sensor(2)) - 3;
     readen_left = matrix(left_sensor(1), left_sensor(2)) - 3;
     readen_right = matrix(right_sensor(1), right_sensor(2)) - 3;
-
-    %disp("Left sensor " + readen_left);
-    %disp("Right sensor " + readen_right);
-    %disp("Front sensor " + readen_front);
 end
 
 function legal = legalMove(stat, new_dir)
@@ -193,7 +154,6 @@ function legal = legalMove(stat, new_dir)
     i = find(one_hot_dir==1);
 
     if(abs(new_dir - i) == 2)  %Then illegal move: keep current direction
-        %disp("Found illegal; keeping current direction")
         legal = i;
     else
         legal = new_dir;
@@ -201,40 +161,28 @@ function legal = legalMove(stat, new_dir)
 end
 
 %Perform movement: returns the game matrix updated
-function [final_matrix, final_array, final_status, final_direction, final_score, final_nn1, final_nn2, final_nn3, final_nn4] = move(my_matrix, my_array, my_status, my_direction, my_len, my_nn1, my_nn2, my_nn3, my_nn4)   %status is used to see if it's a legal move
+function [final_matrix, final_array, final_status, final_direction, final_score] = move(my_matrix, my_array, my_status, my_direction, my_len)   %status is used to see if it's a legal move
     legal_direction = legalMove(my_status, my_direction);
     [next_h_x, next_h_y] = nextHeadCoord(my_matrix, legal_direction);   %Provide already legal direction
     final_score = my_len;
 
     if(my_matrix(next_h_x, next_h_y) == -1)
-        %TODO reset
-        %disp("Game over: crashed with border")
-        [i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
+        [i1, i2, i3, i4, i5] = reset_init();
 
         final_matrix = i1;
         final_array = i2;
         final_status = i3;
         final_direction = i4;
         final_score = i5;
-        final_nn1 = inn1;
-        final_nn2 = inn2;
-        final_nn3 = inn3;
-        final_nn4 = inn4;
 
     elseif (my_matrix(next_h_x, next_h_y) > 0)
-        %TODO reset
-        %disp("Game over: biten yourself")
-        [i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
+        [i1, i2, i3, i4, i5] = reset_init();
 
         final_matrix = i1;
         final_array = i2;
         final_status = i3;
         final_direction = i4;
         final_score = i5;
-        final_nn1 = inn1;
-        final_nn2 = inn2;
-        final_nn3 = inn3;
-        final_nn4 = inn4;
     else
         %Do mov
         [clear_x, clear_y] = snakeTailCoord(my_matrix);
@@ -252,10 +200,6 @@ function [final_matrix, final_array, final_status, final_direction, final_score,
         [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(final_matrix, legal_direction);
         final_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
         final_direction = legal_direction;
-        final_nn1 = my_nn1;
-        final_nn2 = my_nn2;
-        final_nn3 = my_nn3;
-        final_nn4 = my_nn4;
     end
 end
 
@@ -376,24 +320,6 @@ end
 
 %Utilities
 
-%Print everything
-function print(my_matrix, my_snake, length, direction, status, head, tail)
-    disp("Direction is ");
-    disp(direction);
-    disp("Status is ");
-    disp(status);
-    disp("Snake is long ");
-    disp(length);
-    disp("Snake body is");
-    disp(my_snake);
-    disp("Head is ");
-    disp(head);
-    disp("Tail is ");
-    disp(tail);
-    disp("Snake is ");
-    disp(my_matrix);
-end
-
 %pop() function
 function arr = pop(my_array)
     arr = my_array;
@@ -417,53 +343,17 @@ end
 %Neural Network
 
 %Randomizer for Neural Network
-function [weights_first, weights_second, biases_hidden, biases_out] = NN()
-    %disp("Randomizing network...")
-    weights_first = 1 - rand(256, 11)*2;
-    %disp("Pesi first")
-    %disp(weights_first)
-
-    weights_second = 1 - rand(4, 256)*2;
-    %disp("Pesi second")
-    %disp(weights_second)
-
-    biases_hidden = 1 - rand(1, 256)*2;
-    %disp("Biases hidden")
-    %disp(biases_hidden)
-
-    biases_out = 1 - rand(1, 4)*2;
-    %disp("Biases out")
-    %disp(biases_out)
-end
 
 function final_move = feedForward(my_status, wei_f, wei_s, bia_f, bia_s)
     activation_vct_first = wei_f*(my_status.');
-    %disp("Vettore di attivazione primo ")
-    %disp(activation_vct_first)
-    
-    %disp("Confronto con i biases")
     in_second_vct = activation_vct_first > bia_f.';
-    %disp("Ottengo")
-    %disp(in_second_vct)
 
     activation_vct_second = wei_s*in_second_vct;
-    %disp("Vettore di attivazione secondo ")
-    %disp(activation_vct_second)
     
     out_vct = activation_vct_second > bia_s.';
-    %disp("Confronto con i biases finali")
-    %disp("Ottengo")
-    %disp(out_vct)
-
-    %disp("Scelgo il massimo")
     max_vct = out_vct.*activation_vct_second;
-    %disp("Ottengo")
-    %disp(max_vct)
-    
     [a, b] = max(max_vct);
     final_move = b;
-
-    %disp("Mossa finale " + final_move)
 
 end
 

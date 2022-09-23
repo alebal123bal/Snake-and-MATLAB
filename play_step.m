@@ -1,3 +1,11 @@
+
+
+
+nn_weights_first = readmatrix('best1.dat');
+nn_weights_second = readmatrix('best2.dat');
+nn_biases_hidden = readmatrix('best3.dat');
+nn_biases_out = readmatrix('best4.dat');
+
 [i1, i2, i3, i4, i5] = reset_init();
 
 snake_body = i1;
@@ -6,30 +14,51 @@ snake_status = i3;
 snake_direction = i4;
 snake_score = i5;
 
-disp("Posizione iniziale")
-disp(snake_body)
-disp("Status iniziale")
-disp(snake_status)
 
-highscore
+%disp("Posizione iniziale")
+disp(snake_body)
+%disp("Status iniziale")
+%disp(snake_status)
+
+highscore = snake_score;
+
+i = 1;
+steps_taken = 0;
 
 %Main loop
-for i = 1:1
-    %chosen_direction = predictMove(snake_status);
-    chosen_direction = 1;
-    disp("Voglio muovermi a " + chosen_direction)
+while i<=20
+    chosen_direction = feedForward(snake_status, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
+    %disp("Voglio muovermi a " + chosen_direction)
 
-    [image, vector, stat, dir, highscore] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score);
+    [image, vector, stat, dir, score] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score);
     snake_body = image;
     snake_body_array = vector;
     snake_status = stat;
     snake_direction = dir;
-    snake_score = highscore;
+    snake_score = score;
     
-    disp("Dopo la " + i + " mossa")
     disp(snake_body)
-    disp("Status dopo la " + i + " mossa")
-    disp(snake_status)
+
+    if snake_score > highscore
+        highscore = snake_score;
+        disp("New highscore! (" + highscore + ")")
+    end
+
+    %disp(i)
+    i = i + 1;
+    steps_taken = steps_taken + 1;
+    if steps_taken > 100
+        %disp("Looping: Resetting")
+        [i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
+        
+        snake_body = i1;
+        snake_body_array = i2;
+        snake_status = i3;
+        snake_direction = i4;
+        snake_score = i5;
+
+        steps_taken = 0;
+    end
 end
 
 %RESET function
@@ -47,14 +76,16 @@ end
 
 %Predefined values
 function body = generate_body()
-    body = [-1 -1 -1 -1 -1 -1 -1 -1; 
-    -1 0 0 0 0 0 0 -1;
-    -1 0 0 0 0 0 0 -1;
-    -1 0 2 1 0 0 0 -1;
-    -1 0 0 0 0 0 0 -1;
-    -1 0 0 0 0 0 0 -1;
-    -1 0 0 0 0 0 0 -1;
-    -1 -1 -1 -1 -1 -1 -1 -1];
+    body = [-1 -1 -1 -1 -1 -1 -1 -1 -1 -1; 
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 2 1 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 0 0 0 0 0 0 0 0 -1;
+    -1 -1 -1 -1 -1 -1 -1 -1 -1 -1];
 end
 
 %Get array of x and y coords of head
@@ -65,18 +96,6 @@ end
 %Get array of x and y coords of tail
 function [t_x, t_y] = snakeTailCoord(my_matrix)
     [t_x, t_y] = ind2sub(size(my_matrix), find(my_matrix==body_len(my_matrix)));
-end
-
-%Get index of the head inside snake_body_array
-function i = bodyHeadIndex(my_matrix, my_array)
-    [h_x, h_y] = snakeHeadCoord(my_matrix);
-    [~, i] = ismember([h_x, h_y], my_array, 'rows');
-end
-
-%Get index of the tail inside snake_body_array
-function i = bodyTailIndex(my_matrix, my_array)
-    [t_x, t_y] = snakeTailCoord(my_matrix);
-    [~, i] = ismember([t_x, t_y], my_array, 'rows');
 end
 
 %Get body length
@@ -128,10 +147,6 @@ function [readen_front, readen_left, readen_right]= snakeReadSensors(matrix, cur
     readen_front = matrix(front_sensor(1), front_sensor(2)) - 3;
     readen_left = matrix(left_sensor(1), left_sensor(2)) - 3;
     readen_right = matrix(right_sensor(1), right_sensor(2)) - 3;
-
-    %disp("Left sensor " + readen_left);
-    %disp("Right sensor " + readen_right);
-    %disp("Front sensor " + readen_front);
 end
 
 function legal = legalMove(stat, new_dir)
@@ -139,7 +154,6 @@ function legal = legalMove(stat, new_dir)
     i = find(one_hot_dir==1);
 
     if(abs(new_dir - i) == 2)  %Then illegal move: keep current direction
-        disp("Found illegal; keeping current direction")
         legal = i;
     else
         legal = new_dir;
@@ -153,8 +167,6 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
     final_score = my_len;
 
     if(my_matrix(next_h_x, next_h_y) == -1)
-        %TODO reset
-        disp("Game over: crashed with border")
         [i1, i2, i3, i4, i5] = reset_init();
 
         final_matrix = i1;
@@ -164,8 +176,6 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
         final_score = i5;
 
     elseif (my_matrix(next_h_x, next_h_y) > 0)
-        %TODO reset
-        disp("Game over: biten yourself")
         [i1, i2, i3, i4, i5] = reset_init();
 
         final_matrix = i1;
@@ -189,7 +199,7 @@ function [final_matrix, final_array, final_status, final_direction, final_score]
         end
         [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11] = status(final_matrix, legal_direction);
         final_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
-        final_direction = predictMove(final_status);
+        final_direction = legal_direction;
     end
 end
 
@@ -224,17 +234,16 @@ end
 
 %Apple is -2
 function apple_added_matrix = apple(my_matrix)
-    x = 1 + randi(6);
-    y = 1 + randi(6);
+    x = 1 + randi(8);
+    y = 1 + randi(8);
 
     while (my_matrix(x, y) - 2 >= -1)
-        x = 1 + randi(6);
-        y = 1 + randi(6);
+        x = 1 + randi(8);
+        y = 1 + randi(8);
     end
 
     apple_added_matrix = my_matrix;
     apple_added_matrix(x, y) = -2;
-    %apple_added_matrix(3, 6) = apple_added_matrix(3, 6) - 2;
 end
 
 %Function to get apple position
@@ -264,9 +273,7 @@ function [is_right, is_down, is_left, is_up] = applePosition(my_matrix)
     if apple_y < head_y
         is_left = 1;
     end
-    
 end
-
 
 %Function to return current status
 function [dir_r, dir_d, dir_l, dir_u, food_r, food_d, food_l, food_u, dan_ah, dan_l, dan_r] = status(my_matrix, direction)
@@ -310,24 +317,6 @@ end
 
 %Utilities
 
-%Print everything
-function print(my_matrix, my_snake, length, direction, status, head, tail)
-    disp("Direction is ");
-    disp(direction);
-    disp("Status is ");
-    disp(status);
-    disp("Snake is long ");
-    disp(length);
-    disp("Snake body is");
-    disp(my_snake);
-    disp("Head is ");
-    disp(head);
-    disp("Tail is ");
-    disp(tail);
-    disp("Snake is ");
-    disp(my_matrix);
-end
-
 %pop() function
 function arr = pop(my_array)
     arr = my_array;
@@ -349,18 +338,16 @@ function arr = sort_array(my_array)
 end
 
 %Neural Network
+function final_move = feedForward(my_status, wei_f, wei_s, bia_f, bia_s)
+    activation_vct_first = wei_f*(my_status.');
+    in_second_vct = activation_vct_first > bia_f.';
 
-%Randomizer for Neural Network
-function [weights_first, weights_second, biases_hidden, biases_out] = NN()
+    activation_vct_second = wei_s*in_second_vct;
     
-end
-
-function predicted_dir = predictMove(my_status, my_neural_network)
-    predicted_dir = feedForward(my_status, my_neural_network);
-end
-
-function final_move = feedForward(my_status, my_neural_network)
-    final_move = 1;
+    out_vct = activation_vct_second > bia_s.';
+    max_vct = out_vct.*activation_vct_second;
+    [~, b] = max(max_vct);
+    final_move = b;
 end
 
 
