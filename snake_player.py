@@ -8,9 +8,7 @@ SQUARE_SIZE = 50
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
-my_matrix = eng.snake_body
-for i in range(5):
-    print(my_matrix(i))
+my_matrix = eng.
 
 #pygame.init()
 #dis = pygame.display.set_mode((10*SQUARE_SIZE, 10*SQUARE_SIZE))
