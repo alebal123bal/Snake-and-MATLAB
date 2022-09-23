@@ -1,64 +1,67 @@
-matlab.engine.shareEngine;
+%matlab.engine.shareEngine;
 
-
-nn_weights_first = readmatrix('best1.dat');
-nn_weights_second = readmatrix('best2.dat');
-nn_biases_hidden = readmatrix('best3.dat');
-nn_biases_out = readmatrix('best4.dat');
-
-[i1, i2, i3, i4, i5] = reset_init();
-
-snake_body = i1;
-snake_body_array = i2;
-snake_status = i3;
-snake_direction = i4;
-snake_score = i5;
-
-
-%disp("Posizione iniziale")
-disp(snake_body)
-%disp("Status iniziale")
-%disp(snake_status)
-
-highscore = snake_score;
-
-i = 1;
-steps_taken = 0;
-
-%Main loop
-while i<=20
-    chosen_direction = feedForward(snake_status, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
-    %disp("Voglio muovermi a " + chosen_direction)
-
-    [image, vector, stat, dir, score] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score);
-    snake_body = image;
-    snake_body_array = vector;
-    snake_status = stat;
-    snake_direction = dir;
-    snake_score = score;
+function to_print_mtx = main()
+    nn_weights_first = readmatrix('best1.dat');
+    nn_weights_second = readmatrix('best2.dat');
+    nn_biases_hidden = readmatrix('best3.dat');
+    nn_biases_out = readmatrix('best4.dat');
+    
+    [i1, i2, i3, i4, i5] = reset_init();
+    
+    snake_body = i1;
+    snake_body_array = i2;
+    snake_status = i3;
+    snake_direction = i4;
+    snake_score = i5;
     
     disp(snake_body)
-
-    if snake_score > highscore
-        highscore = snake_score;
-        disp("New highscore! (" + highscore + ")")
-    end
-
-    %disp(i)
-    i = i + 1;
-    steps_taken = steps_taken + 1;
-    if steps_taken > 100
-        %disp("Looping: Resetting")
-        [i1, i2, i3, i4, i5, inn1, inn2, inn3, inn4] = reset_init();
+    highscore = snake_score;
+    
+    i = 1;
+    steps_taken = 0;
+    
+    
+    %Main loop
+    while i<=2000000
+        chosen_direction = feedForward(snake_status, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
+    
+        [image, vector, stat, dir, score] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score);
+        snake_body = image;
+        snake_body_array = vector;
+        snake_status = stat;
+        snake_direction = dir;
+        snake_score = score;
         
-        snake_body = i1;
-        snake_body_array = i2;
-        snake_status = i3;
-        snake_direction = i4;
-        snake_score = i5;
-
-        steps_taken = 0;
+        to_print_mtx = activate_mtx(snake_body);
+    
+        disp(to_print_mtx)
+    
+        if snake_score > highscore
+            highscore = snake_score;
+            disp("New highscore! (" + highscore + ")")
+        end
+    
+        %disp(i)
+        i = i + 1;
+        steps_taken = steps_taken + 1;
+        if steps_taken > 100
+            %disp("Looping: Resetting")
+            [i1, i2, i3, i4, i5] = reset_init();
+            
+            snake_body = i1;
+            snake_body_array = i2;
+            snake_status = i3;
+            snake_direction = i4;
+            snake_score = i5;
+    
+            steps_taken = 0;
+        end
     end
+
+end
+
+function activated_matrix = activate_mtx(my_matrix)
+    activated_matrix = my_matrix > 0 | my_matrix == -2;
 end
 
 %RESET function
@@ -71,8 +74,6 @@ function [snake_body, snake_body_array, snake_status, snake_direction, snake_sco
     snake_status = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11];
     snake_score = body_len(snake_body);
 end
-
-
 
 %Predefined values
 function body = generate_body()
