@@ -1,7 +1,5 @@
 %matlab.engine.shareEngine;
 function play_step()
-    writelines("", 'move.dat', 'WriteMode', 'overwrite');
-
     nn_weights_first = readmatrix('best1.dat');
     nn_weights_second = readmatrix('best2.dat');
     nn_biases_hidden = readmatrix('best3.dat');
@@ -15,13 +13,11 @@ function play_step()
     snake_direction = i4;
     snake_score = i5;
     
-    highscore = snake_score;
-
     to_print_mtx = activate_mtx(snake_body);
-
-    writelines("Nuovo", 'move.dat', 'WriteMode', 'append');
-    writematrix(to_print_mtx, 'move.dat', 'WriteMode', 'append');
-
+    %disp(to_print_mtx)
+    %writematrix(to_print_mtx, 'move.dat')
+    highscore = snake_score;
+    
     i = 1;
     steps_taken = 0;
 
@@ -42,7 +38,8 @@ function play_step()
             highscore = snake_score;
             disp("New highscore! (" + highscore + ")")
         end
-
+    
+        %disp(i)
         i = i + 1;
         steps_taken = steps_taken + 1;
         if steps_taken > 100
@@ -57,9 +54,14 @@ function play_step()
     
             steps_taken = 0;
         end
-        
-        writelines("Nuovo", 'move.dat', 'WriteMode', 'append');
+    
+        %disp(to_print_mtx)
         writematrix(to_print_mtx, 'move.dat', 'WriteMode', 'append');
+        writelines("\n", '')
+        %fid = fopen('move.dat', 'a+');
+        %fprintf(fid, "Mossa numero %d", i);
+        %fprintf(fid, '%d', to_print_mtx);
+        %fclose(fid);
     end
 end
 

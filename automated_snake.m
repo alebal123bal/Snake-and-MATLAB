@@ -22,10 +22,14 @@ steps_taken = 0;
 
 %Main loop
 while highscore < 9
-    chosen_direction = feedForward(snake_status, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
+    chosen_direction = feedForward(snake_status, nn_weights_first, ...
+        nn_weights_second, nn_biases_hidden, nn_biases_out);
     %disp("Voglio muovermi a " + chosen_direction)
 
-    [image, vector, stat, dir, score, inn1, inn2, inn3, inn4] = move(snake_body, snake_body_array, snake_status, chosen_direction, snake_score, nn_weights_first, nn_weights_second, nn_biases_hidden, nn_biases_out);
+    [image, vector, stat, dir, score, inn1, inn2, inn3, inn4] = move(snake_body, ...
+        snake_body_array, ...
+        snake_status, chosen_direction, snake_score, nn_weights_first, ...
+        nn_weights_second, nn_biases_hidden, nn_biases_out);
     snake_body = image;
     snake_body_array = vector;
     snake_status = stat;
@@ -201,7 +205,8 @@ function legal = legalMove(stat, new_dir)
 end
 
 %Perform movement: returns the game matrix updated
-function [final_matrix, final_array, final_status, final_direction, final_score, final_nn1, final_nn2, final_nn3, final_nn4] = move(my_matrix, my_array, my_status, my_direction, my_len, my_nn1, my_nn2, my_nn3, my_nn4)   %status is used to see if it's a legal move
+function [final_matrix, final_array, final_status, final_direction, final_score, final_nn1, final_nn2, final_nn3, final_nn4] = move(my_matrix, my_array, my_status, my_direction, ...
+    my_len, my_nn1, my_nn2, my_nn3, my_nn4)   %status is used to see if it's a legal move
     legal_direction = legalMove(my_status, my_direction);
     [next_h_x, next_h_y] = nextHeadCoord(my_matrix, legal_direction);   %Provide already legal direction
     final_score = my_len;
@@ -335,7 +340,8 @@ end
 
 
 %Function to return current status
-function [dir_r, dir_d, dir_l, dir_u, food_r, food_d, food_l, food_u, dan_ah, dan_l, dan_r] = status(my_matrix, direction)
+function [dir_r, dir_d, dir_l, dir_u, food_r, food_d, food_l, food_u, dan_ah, dan_l, dan_r] = status(my_matrix, ...
+    direction)
     dan_ah = 0;
     dan_l = 0;
     dan_r = 0;
